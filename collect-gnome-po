@@ -1,0 +1,88 @@
+#!/bin/sh
+
+DAMNEDLIES=https://l10n.gnome.org/languages
+LANG=ja
+DEVELOPMENT=gnome-3-10
+DEVELOPMENT_URL="${DAMNEDLIES}/${LANG}/${DEVELOPMENT}"
+EXTERNAL_DEPS_URL="${DAMNEDLIES}/${LANG}/external-deps"
+GNOME_OFFICE_URL="${DAMNEDLIES}/${LANG}/gnome-office"
+GNOME_INFRASTRUCTURE_URL="${DAMNEDLIES}/${LANG}/gnome-infrastructure"
+GNOME_GIMP_URL="${DAMNEDLIES}/${LANG}/gnome-gimp"
+GNOME_EXTRAS_URL="${DAMNEDLIES}/${LANG}/gnome-extras"
+
+BASE_DIR="$PWD"
+UI_DOWNLOADED=
+DOC_DOWNLOADED=
+
+usage() {
+  cmd=`basename $0`
+  echo "Usage: $cmd [-c BASE_DIR] [-d] [-u]"
+}
+
+
+OPT=`getopt c:dhu "$@"`
+if [ $? -ne 0 ]; then
+  usage >&2
+  exit 1
+fi
+eval set -- "$OPT"
+while :; do
+  case "$1" in
+  -c)
+    BASE_DIR="$2"
+    shift 2
+    ;;
+  -d)
+    DOC_DOWNLOADED=1
+    shift 1
+    ;;
+  -h)
+    usage
+    exit 0
+    ;;
+  -u)
+    UI_DOWNLOADED=1
+    shift 1
+    ;;
+  --)
+    shift 1
+    break;
+    ;;
+  *)
+    usage >&2
+    exit 1
+    ;;
+  esac
+done
+
+if test -z "$UI_DOWNLOADED" && test -z "$DOC_DOWNLOADED"; then
+  UI_DOWNLOADED=1
+  DOC_DOWNLOADED=1
+fi
+
+UI_DIR="${BASE_DIR}/ui"
+DOC_DIR="${BASE_DIR}/doc"
+
+if test -n "$UI_DOWNLOADED"; then
+  if test ! -d "$UI_DIR"; then
+    mkdir "$UI_DIR" || exit $?
+  fi
+  curl -L "${DEVELOPMENT_URL}/ui.tar.gz" | tar xvz --directory "$UI_DIR"
+  curl -L "${EXTERNAL_DEPS_URL}/ui.tar.gz" | tar xvz --directory "$UI_DIR"
+  curl -L "${GNOME_OFFICE_URL}/ui.tar.gz" | tar xvz --directory "$UI_DIR"
+  curl -L "${GNOME_INFRASTRUCTURE_URL}/ui.tar.gz" | tar xvz --directory "$UI_DIR"
+  curl -L "${GNOME_GIMP_URL}/ui.tar.gz" | tar xvz --directory "$UI_DIR"
+  curl -L "${GNOME_EXTRAS_URL}/ui.tar.gz" | tar xvz --directory "$UI_DIR"
+fi
+
+if test -n "$DOC_DOWNLOADED"; then
+  if test ! -d "$DOC_DIR"; then
+    mkdir "$DOC_DIR" || exit $?
+  fi
+  curl -L "${DEVELOPMENT_URL}/doc.tar.gz" | tar xvz --directory "$DOC_DIR"
+  curl -L "${EXTERNAL_DEPS_URL}/doc.tar.gz" | tar xvz --directory "$DOC_DIR"
+  curl -L "${GNOME_OFFICE_URL}/doc.tar.gz" | tar xvz --directory "$DOC_DIR"
+  curl -L "${GNOME_INFRASTRUCTURE_URL}/doc.tar.gz" | tar xvz --directory "$DOC_DIR"
+  curl -L "${GNOME_GIMP_URL}/doc.tar.gz" | tar xvz --directory "$DOC_DIR"
+  curl -L "${GNOME_EXTRAS_URL}/doc.tar.gz" | tar xvz --directory "$DOC_DIR"
+fi
